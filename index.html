@@ -9,13 +9,13 @@
 <body class="bg-gray-100 min-h-screen flex items-center justify-center">
     <div class="bg-white shadow-lg rounded-lg p-8 max-w-md w-full">
         <h1 class="text-2xl font-bold text-gray-800 text-center mb-6">MNIST Digit Recognizer</h1>
-        <form action="/predict" method="post" enctype="multipart/form-data" class="space-y-4">
+        <form id="uploadForm" enctype="multipart/form-data" class="space-y-4">
             <div>
                 <label class="block text-sm font-medium text-gray-700" for="file">Upload a Digit Image</label>
                 <input type="file" name="file" id="file" class="mt-1 block w-full text-sm text-gray-500 
                        file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0
                        file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700
-                       hover:file:bg-indigo-100">
+                       hover:file:bg-indigo-100" required>
             </div>
             <div class="flex justify-center">
                 <button type="submit" class="py-2 px-4 bg-indigo-600 text-white rounded-md 
@@ -25,6 +25,36 @@
                 </button>
             </div>
         </form>
+        <div id="result" class="mt-4 text-center text-lg font-medium text-gray-800"></div>
     </div>
+
+    <script>
+        document.getElementById('uploadForm').onsubmit = async function(e) {
+            e.preventDefault();  // Prevent default form submission
+
+            const formData = new FormData();
+            const fileInput = document.getElementById('file');
+            
+            if (fileInput.files.length === 0) {
+                document.getElementById('result').innerText = "Please upload an image.";
+                return;
+            }
+
+            formData.append('file', fileInput.files[0]);
+
+            const response = await fetch('/predict', {
+                method: 'POST',
+                body: formData,
+            });
+
+            const result = await response.json();
+
+            if (result.predicted_digit !== undefined) {
+                document.getElementById('result').innerText = `Prediction: ${result.predicted_digit}`;
+            } else if (result.error) {
+                document.getElementById('result').innerText = `Error: ${result.error}`;
+            }
+        };
+    </script>
 </body>
 </html>
